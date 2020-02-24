@@ -18,7 +18,7 @@ public class TCPMultiServerThread extends Thread {
         this.hostname = hostname;
     }
 
-    public void run(String hostname) {
+    public void run() {
 
 		try {
 	 	    PrintWriter cSocketOut = new PrintWriter(clientTCPSocket.getOutputStream(), true);
@@ -28,7 +28,7 @@ public class TCPMultiServerThread extends Thread {
 			  
             while (this.state != -1) {
                 if (this.state == 0) {
-                    this.state = initializeConnection(cSocketOut,hostname);
+                    this.state = initializeConnection(cSocketOut);
                 } else {
                     this.state = -1;
                 }
@@ -49,8 +49,8 @@ public class TCPMultiServerThread extends Thread {
 		}
     }
 
-    private int initializeConnection(PrintWriter cSocketOut,String hostname) {
-        String toClient = "220 " + hostname;
+    private int initializeConnection(PrintWriter cSocketOut) {
+        String toClient = "220 " + this.hostname;
         cSocketOut.println(toClient);
         return 1;
     }

@@ -12,7 +12,7 @@ public class TCPMultiServer {
     public static void main(String[] args) throws IOException {
         ServerSocket serverTCPSocket = null;
         boolean listening = true;
-        String hostname = InetAddress.getLocalHost().getHostName();
+        String hostname = InetAddress.getLocalHost().getCanonicalHostName();
 
         try {
             serverTCPSocket = new ServerSocket(4567);
