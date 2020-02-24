@@ -12,6 +12,7 @@ public class TCPMultiServer {
     public static void main(String[] args) throws IOException {
         ServerSocket serverTCPSocket = null;
         boolean listening = true;
+        String hostname = InetAddress.getLocalHost().getHostName();
 
         try {
             serverTCPSocket = new ServerSocket(4567);
@@ -21,8 +22,8 @@ public class TCPMultiServer {
         }
 
         while (listening){
-	    		new TCPMultiServerThread(serverTCPSocket.accept()).start();
-		  }
+            new TCPMultiServerThread(serverTCPSocket.accept(), hostname).start();
+        }
 			
         serverTCPSocket.close();
     }

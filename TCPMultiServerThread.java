@@ -10,13 +10,15 @@ import java.io.*;
 public class TCPMultiServerThread extends Thread {
     private Socket clientTCPSocket = null;
     private int state = 0;
+    private String hostname;
 
-    public TCPMultiServerThread(Socket socket) {
+    public TCPMultiServerThread(Socket socket, String hostname) {
 		super("TCPMultiServerThread");
 		clientTCPSocket = socket;
+        this.hostname = hostname;
     }
 
-    public void run() {
+    public void run(String hostname) {
 
 		try {
 	 	    PrintWriter cSocketOut = new PrintWriter(clientTCPSocket.getOutputStream(), true);
@@ -26,7 +28,7 @@ public class TCPMultiServerThread extends Thread {
 			  
             while (this.state != -1) {
                 if (this.state == 0) {
-                    this.state = initializeConnection(cSocketOut);
+                    this.state = initializeConnection(cSocketOut,hostname);
                 } else {
                     this.state = -1;
                 }
@@ -47,8 +49,7 @@ public class TCPMultiServerThread extends Thread {
 		}
     }
 
-    private int initializeConnection(PrintWriter cSocketOut) {
-        String hostname = java.net.InetAddress.getHostName();
+    private int initializeConnection(PrintWriter cSocketOut,String hostname) {
         String toClient = "220 " + hostname;
         cSocketOut.println(toClient);
         return 1;
