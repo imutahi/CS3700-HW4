@@ -9,18 +9,22 @@ import java.io.*;
 
 public class TCPMultiServerThread extends Thread {
     private Socket clientTCPSocket = null;
+    private InetAddress hostAddress;
+    private InetAddress clientAddress;
     private int state = 0;
     private String hostname;
-
+    
     public TCPMultiServerThread(Socket socket, String hostname) {
 		super("TCPMultiServerThread");
 		clientTCPSocket = socket;
         this.hostname = hostname;
     }
-
+    
     public void run() {
 
 		try {
+			this.clientAddress = clientTCPSocket.getInetAddress();
+			this.hostAddress = clientTCPSocket.getLocalAddress();
 	 	    PrintWriter cSocketOut = new PrintWriter(clientTCPSocket.getOutputStream(), true);
             BufferedReader cSocketIn = new BufferedReader(
                 new InputStreamReader(
@@ -48,10 +52,24 @@ public class TCPMultiServerThread extends Thread {
 		    e.printStackTrace();
 		}
     }
-
+    ParseResponse parseRequest(int currentState, String clientMessage) {
+    	 if(currentState == 1) { 
+    		 String[] words = clientMessage.split(" ", 2);
+    		 if(words[0].equals("HELO")) {
+    			 ParseResponse response = new ParseResponse();
+    			 response.response = "250 " + this.hostAddress.toString() + " Hello " + this.clientAddress.toString() + "\r\n";
+    			 response.newState = 2;
+    		 }
+    	 }
+    }
     private int initializeConnection(PrintWriter cSocketOut) {
         String toClient = "220 " + this.hostname;
         cSocketOut.println(toClient);
         return 1;
     }
+    
+}
+class ParseResponse {
+	  String response;
+	  int newState;	  
 }
