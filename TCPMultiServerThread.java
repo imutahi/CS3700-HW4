@@ -52,16 +52,19 @@ public class TCPMultiServerThread extends Thread {
 		    e.printStackTrace();
 		}
     }
+
     ParseResponse parseRequest(int currentState, String clientMessage) {
+         ParseResponse response = new ParseResponse();
     	 if(currentState == 1) { 
     		 String[] words = clientMessage.split(" ", 2);
     		 if(words[0].equals("HELO")) {
-    			 ParseResponse response = new ParseResponse();
     			 response.response = "250 " + this.hostAddress.toString() + " Hello " + this.clientAddress.toString() + "\r\n";
     			 response.newState = 2;
     		 }
     	 }
+         return response;
     }
+
     private int initializeConnection(PrintWriter cSocketOut) {
         String toClient = "220 " + this.hostname;
         cSocketOut.println(toClient);
