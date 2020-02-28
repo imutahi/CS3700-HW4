@@ -53,6 +53,26 @@ public class TCPMultiServerThread extends Thread {
                         cSocketOut.println(response.response);
                     }
 
+                } else if(this.state == 5) {
+                    StringBuilder mailBodyLines = new StringBuilder();
+                    String fromClient;
+                    while ((fromClient = cSocketIn.readLine()) != null){
+                        
+
+                        mailBodyLines.append(fromClient + "\r\n");
+
+                        if(fromClient.equals(".")){
+                            break;
+                        }
+                    }
+
+                    String mailBody = mailBodyLines.toString();
+                    response = parseRequest(this.state,mailBody);
+                    this.state = response.newState;
+
+                    if (response.response != null) {
+                        cSocketOut.println(response.response);
+                    }
                 } else {
                     this.state = -1;
                     break;
@@ -109,8 +129,7 @@ public class TCPMultiServerThread extends Thread {
                  response.newState = 3;
                  response.response = "503 5.5.2 Need rcpt command";
              }
-         } 
-          else if(currentState == 4) { 
+         } else if(currentState == 4) { 
              String[] words = clientMessage.split(" ", 3);
              if (words[0].equals("DATA")) {
                  response.newState = 5;
@@ -119,8 +138,11 @@ public class TCPMultiServerThread extends Thread {
                  response.newState = 4;
                  response.response = "503 5.5.2 Need data command";
              }
-         }  
-          else {
+         } else if (currentState == 5){
+            response.newState = 1;
+            response.response = "250 Message received and to be delivered";
+            System.out.println(clientMessage);
+         } else {
              response.newState = -1;
          }
          return response;
