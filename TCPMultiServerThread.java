@@ -31,15 +31,25 @@ public class TCPMultiServerThread extends Thread {
                     clientTCPSocket.getInputStream()));
 			  
             while (this.state != -1) {
+                ParseResponse response = new ParseResponse();
+
                 if (this.state == 0) {
                     this.state = initializeConnection(cSocketOut);
-                } else if(this.state == 1) {
+                } else if(this.state != 3) {
                     String clientMessage = cSocketIn.readLine();
-                    ParseResponse response = parseRequest(this.state, clientMessage);
+                    response = parseRequest(this.state, clientMessage);
+
+                    System.out.println("Next State: " + String.valueOf(response.newState));
+                    System.out.println("Response: " + response.response);
+
                     this.state = response.newState;
-                    if (response.response != null) {cSocketOut.print(response.response);}
+                    if (response.response != null) {
+                        cSocketOut.println(response.response);
+                    }
+
                 } else {
                     this.state = -1;
+                    break;
                 }
 				
 				// toClient = fromClient.toUpperCase();
@@ -66,15 +76,26 @@ public class TCPMultiServerThread extends Thread {
 
     		 if(words[0].equals("HELO")) {
     			 response.newState = 2;
-    			 response.response = "250 " + this.hostAddress.getHostAddress() + " Hello " + this.clientAddress.getHostAddress() + "\r\n";
+    			 response.response = "250 " + this.hostAddress.getHostAddress() + " Hello " + this.clientAddress.getHostAddress();
     		 } else if (words[0].equals("QUIT")) {
                  response.newState = -1;
-                 response.response = "221 " + this.hostAddress.getHostAddress() + " closing connection\r\n";
+                 response.response = "221 " + this.hostAddress.getHostAddress() + " closing connection";
              } else {
                  response.newState = 1;
-                 response.response = "503 5.5.2 Send hello first\r\n";
+                 response.response = "503 5.5.2 Send hello first";
              }
-    	 }
+    	 } else if(currentState == 2) { 
+    		 String[] words = clientMessage.split(" ", 3);
+             if (words[0].equals("MAIL") && words[1].equals("FROM:")) {
+                 response.newState = 3;
+                 response.response = "250 2.1.0 Sender OK";
+             } else {
+                 response.newState = 2;
+                 response.response = "503 5.5.2 Need mail command";
+             }
+         } else {
+             response.newState = -1;
+         }
 
          return response;
     }
