@@ -1,9 +1,9 @@
 /*
- * Server App upon TCP
- * A thread is created for each connection request from a client
- * So it can handle Multiple Client Connections at the same time
- * Weiying Zhu
- */ 
+ * HW #4 SMTP 
+ * Justin Huffman 
+ * Ian Mutahi
+ * CS3700
+ */  
 
 import java.net.*;
 import java.io.*;

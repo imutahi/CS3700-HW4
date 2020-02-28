@@ -1,7 +1,8 @@
 /*
- * Server App upon TCP
- * A thread is started to handle every client TCP connection to this server
- * Weiying Zhu
+ * HW #4 SMTP 
+ * Justin Huffman 
+ * Ian Mutahi
+ * CS3700
  */ 
 
 import java.net.*;
@@ -35,7 +36,7 @@ public class TCPMultiServerThread extends Thread {
 
                 if (this.state == 0) {
                     this.state = initializeConnection(cSocketOut);
-                } else if(this.state != 3) {
+                } else if(this.state != 5) {
                     String clientMessage = cSocketIn.readLine();
                     if (clientMessage == null) {
                         System.out.println("Connection closed prematurely by client: " + this.clientAddress.getHostAddress() + ".");
@@ -98,10 +99,30 @@ public class TCPMultiServerThread extends Thread {
                  response.newState = 2;
                  response.response = "503 5.5.2 Need mail command";
              }
-         } else {
+
+         } else if(currentState == 3) { 
+             String[] words = clientMessage.split(" ", 3);
+             if (words[0].equals("RCPT") && words[1].equals("TO:")) {
+                 response.newState = 4;
+                 response.response = "250 2.1.5 Recipient OK";
+             } else {
+                 response.newState = 3;
+                 response.response = "503 5.5.2 Need rcpt command";
+             }
+         } 
+          else if(currentState == 4) { 
+             String[] words = clientMessage.split(" ", 3);
+             if (words[0].equals("DATA")) {
+                 response.newState = 5;
+                 response.response = "354 Start mail input; end with <CRLF>.<CRLF>";
+             } else {
+                 response.newState = 4;
+                 response.response = "503 5.5.2 Need data command";
+             }
+         }  
+          else {
              response.newState = -1;
          }
-
          return response;
     }
 

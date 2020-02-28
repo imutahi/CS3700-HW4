@@ -1,9 +1,9 @@
 /*
- * Client App upon TCP
- *
- * Weiying Zhu
- *
- */ 
+ * HW #4 SMTP 
+ * Justin Huffman 
+ * Ian Mutahi
+ * CS3700
+ */  
 
 import java.io.*;
 import java.net.*;
