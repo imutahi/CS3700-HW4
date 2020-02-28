@@ -37,6 +37,11 @@ public class TCPMultiServerThread extends Thread {
                     this.state = initializeConnection(cSocketOut);
                 } else if(this.state != 3) {
                     String clientMessage = cSocketIn.readLine();
+                    if (clientMessage == null) {
+                        System.out.println("Connection closed prematurely by client: " + this.clientAddress.getHostAddress() + ".");
+                        this.state = -1;
+                        break;
+                    }
                     response = parseRequest(this.state, clientMessage);
 
                     System.out.println("Next State: " + String.valueOf(response.newState));
