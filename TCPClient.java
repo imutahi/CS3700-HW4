@@ -11,30 +11,35 @@ import java.net.*;
 public class TCPClient {
     public static void main(String[] args) throws IOException {
 
+        int state = 0;
         Socket tcpSocket = null;
         PrintWriter socketOut = null;
         BufferedReader socketIn = null;
-
-        if (args.length != 1) {
-             System.out.println("Usage: java TCPClient <hostname>");
-             return;
-        }
-        
-        try {
-            tcpSocket = new Socket(args[0], 4567);
-            socketOut = new PrintWriter(tcpSocket.getOutputStream(), true);
-            socketIn = new BufferedReader(new InputStreamReader(tcpSocket.getInputStream()));
-        } catch (UnknownHostException e) {
-            System.err.println("Don't know about host: " + args[0]);
-            System.exit(1);
-        } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to: "  + args[0]);
-            System.exit(1);
-        }
-
         BufferedReader sysIn = new BufferedReader(new InputStreamReader(System.in));
-        String fromServer;
         String fromUser;
+        String fromServer;
+
+        while (state == 0) {
+            System.out.println("Enter hostname of mail server: ");
+            if((fromUser = sysIn.readLine()) != null) {
+                try {
+                    tcpSocket = new Socket(fromUser, 4567);
+                    socketOut = new PrintWriter(tcpSocket.getOutputStream(), true);
+                    socketIn = new BufferedReader(new InputStreamReader(tcpSocket.getInputStream()));
+                    state = 1;
+                } catch (UnknownHostException e) {
+                    System.err.println("Don't know about host: " + fromUser);
+                } catch (IOException e) {
+                    System.err.println("Couldn't get I/O for the connection to: "  + fromUser);
+                }
+            }
+
+        }
+
+
+        if ((fromServer = socketIn.readLine()) != null) {
+            System.out.println("Server: " + fromServer);
+        }
 
         while ((fromUser = sysIn.readLine()) != null) {
 		      System.out.println("Client: " + fromUser);
@@ -43,6 +48,7 @@ public class TCPClient {
 				if ((fromServer = socketIn.readLine()) != null)
 				{
 					System.out.println("Server: " + fromServer);
+
 				}
 				else {
                 System.out.println("Server replies nothing!");
