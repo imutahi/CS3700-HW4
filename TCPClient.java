@@ -36,6 +36,12 @@ public class TCPClient {
 
         }
 
+        while (state == 1) {
+            Mail mail = getMailFromUser(sysIn);
+            System.out.println(mail.sender);
+            state = 2;
+        }
+
 
         if ((fromServer = socketIn.readLine()) != null) {
             System.out.println("Server: " + fromServer);
@@ -64,5 +70,23 @@ public class TCPClient {
         socketIn.close();
         sysIn.close();
         tcpSocket.close();
+    }
+
+    private static Mail getMailFromUser(BufferedReader sysIn) {
+        Mail mail = new Mail();
+        String sender = getSender(sysIn);
+        mail.sender = sender;
+        return mail;
+    }
+
+    private static String getSender(BufferedReader sysIn) {
+        String sender = null;
+        System.out.println("Please input sender's email address: ");
+        try {
+        sender = sysIn.readLine();
+        } catch (IOException e) {
+            System.err.println("Couldn't read sender's address.");
+        }
+        return sender;
     }
 }
