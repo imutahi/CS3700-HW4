@@ -11,6 +11,8 @@ import java.net.*;
 public class TCPClient {
     public static void main(String[] args) throws IOException {
 
+        TCPClient client = new TCPClient();
+
         int state = 0;
         Socket tcpSocket = null;
         PrintWriter socketOut = null;
@@ -19,37 +21,31 @@ public class TCPClient {
         String fromUser;
         String fromServer;
 
-        while (state == 0) {
-            System.out.println("Enter hostname of mail server: ");
-            if((fromUser = sysIn.readLine()) != null) {
-                try {
-                    tcpSocket = new Socket(fromUser, 4567);
-                    socketOut = new PrintWriter(tcpSocket.getOutputStream(), true);
-                    socketIn = new BufferedReader(new InputStreamReader(tcpSocket.getInputStream()));
-                    state = 1;
-                } catch (UnknownHostException e) {
-                    System.err.println("Don't know about host: " + fromUser);
-                } catch (IOException e) {
-                    System.err.println("Couldn't get I/O for the connection to: "  + fromUser);
+        while(state != -1) {
+            while (state == 0) {
+                ConnectionResponse response = client.connectToServer(sysIn);
+                state = response.newState;
+                if(state != 0) {
+                    tcpSocket = response.tcpSocket;
+                    socketOut = response.socketOut;
+                    socketIn = response.socketIn;
                 }
             }
+            if(state == 1) {
+                Mail mail = getMailFromUser(sysIn);
 
-        }
+                System.out.println("Sender: " + mail.sender);
+                System.out.println("Reciever: " + mail.reciever);
+                System.out.println("Subject: " + mail.subject);
+                System.out.println("Body: " + mail.body);
 
-        while (state == 1) {
-            Mail mail = getMailFromUser(sysIn);
-
-            System.out.println("Sender: " + mail.sender);
-            System.out.println("Reciever: " + mail.reciever);
-            System.out.println("Subject: " + mail.subject);
-            System.out.println("Body: " + mail.body);
-
-            state = 2;
-        }
-
-
-        if ((fromServer = socketIn.readLine()) != null) {
-            System.out.println("Server: " + fromServer);
+                state = 2;
+            }
+            if(state == 2) {
+                if ((fromServer = socketIn.readLine()) != null) {
+                    System.out.println("Server: " + fromServer);
+                }
+            }
         }
 
         while ((fromUser = sysIn.readLine()) != null) {
@@ -62,8 +58,8 @@ public class TCPClient {
 
 				}
 				else {
-                System.out.println("Server replies nothing!");
-                break;
+                    System.out.println("Server replies nothing!");
+                    break;
 				}
 		    
 			   if (fromUser.equals("Bye."))
@@ -75,6 +71,38 @@ public class TCPClient {
         socketIn.close();
         sysIn.close();
         tcpSocket.close();
+    }
+
+    private ConnectionResponse connectToServer(BufferedReader sysIn) {
+
+        String fromUser = new String();
+        ConnectionResponse response = new ConnectionResponse();
+        response.setState(0);
+
+        System.out.println("Enter hostname of mail server: ");
+
+        try {
+            if((fromUser = sysIn.readLine()) != null) {
+
+                Socket socket = new Socket(fromUser, 4567);
+                PrintWriter socketOut = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader socketIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                response.setSocket(socket);
+                response.setSocketOut(socketOut);
+                response.setSocketIn(socketIn);
+                response.setState(1);
+
+            }
+        } catch (UnknownHostException e) {
+
+            System.err.println("Don't know about host: " + fromUser);
+            response.setState(0);
+        } catch (IOException e) {
+            System.err.println("Couldn't get I/O for the connection to: "  + fromUser);
+            response.setState(0);
+        }
+
+        return response;
     }
 
     private static Mail getMailFromUser(BufferedReader sysIn) {
@@ -135,4 +163,48 @@ public class TCPClient {
         }
         return mailBodyLines.toString();
     } 
+
+    private class ConnectionResponse {
+        public int newState = 0;
+        public Socket tcpSocket = null;
+        public PrintWriter socketOut = null;
+        public BufferedReader socketIn = null;
+
+        public ConnectionResponse() {
+
+        }
+
+        public void setState(int state) {
+            this.newState = state;
+        }
+
+        public void setSocket(Socket socket) {
+            this.tcpSocket = tcpSocket;
+        }
+
+        public void setSocketOut(PrintWriter socketOut) {
+            this.socketOut = socketOut;
+        }
+
+        public void setSocketIn(BufferedReader socketIn) {
+            this.socketIn = socketIn;
+        }
+
+        public int getState() {
+            return this.newState;
+        }
+
+        public Socket getSocket() {
+            return this.tcpSocket;
+        }
+
+        public PrintWriter getSocketOut() {
+            return this.socketOut;
+        }
+
+        public BufferedReader getSocketIn() {
+            return this.socketIn;
+        }
+
+    }
 }
