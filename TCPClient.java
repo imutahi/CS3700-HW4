@@ -44,32 +44,44 @@ public class TCPClient {
             }
             if(state == 2) {
                 state = sendMail(state,mail,socketOut,socketIn);
+                if (state != -1) {
+                    state = 3;
+                }
             }
-        }
-
-        while ((fromUser = sysIn.readLine()) != null) {
-		      System.out.println("Client: " + fromUser);
-            socketOut.println(fromUser);
-				
-				if ((fromServer = socketIn.readLine()) != null)
-				{
-					System.out.println("Server: " + fromServer);
-
-				}
-				else {
-                    System.out.println("Server replies nothing!");
-                    break;
-				}
-		    
-			   if (fromUser.equals("Bye."))
-					break;
-         
+            if(state == 3) {
+                state = shouldContinue(sysIn);
+            }
+            socketOut.flush();
         }
 
         socketOut.close();
         socketIn.close();
         sysIn.close();
         tcpSocket.close();
+    }
+
+    private static int shouldContinue(BufferedReader sysIn) {
+        String response;
+        int state = 3;
+        System.out.println("Message sent. Would you like to send another? (y/n): ");
+        try {
+            while((response = sysIn.readLine()) != null) {
+                if(response.trim().equals("y")) {
+                    state = 1;
+                    break;
+                } else if (response.trim().equals("n")) {
+                    state = -1;
+                    break;
+                } else {
+                    System.out.println("Please enter either 'y' or 'n': ");
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("I/O Error reading input to continue.");
+            state = -1;
+        }
+
+        return state;
     }
 
     private static int sendMail(int currentState, Mail mail, PrintWriter socketOut, BufferedReader socketIn) {
@@ -96,6 +108,11 @@ public class TCPClient {
             return -1;
         }
 
+        newState = sendBody(newState, mail.body, socketOut, socketIn);
+        if (newState == -1) {
+            return -1;
+        }
+
         return newState;
     }
 
@@ -105,6 +122,7 @@ public class TCPClient {
         socketOut.println("HELO");
         try {
             if((response = socketIn.readLine()) != null) {
+                System.out.println("Response from HELO: " + response);
                 String[] words = response.split(" ", 5);
                 if(words[0].equals("250")) {
                     newState++;
@@ -183,6 +201,28 @@ public class TCPClient {
         } catch (IOException e) {
             newState = -1;
             System.out.println("I/O exception while sending DATA.");
+        }
+        return newState;
+    }
+
+    private static int sendBody(int currentState, String body, PrintWriter socketOut, BufferedReader socketIn){
+        int newState = currentState;
+        String response;
+        socketOut.println(body);
+        try {
+            if((response = socketIn.readLine()) != null) {
+                String[] words = response.split(" ", 5);
+                if(words[0].equals("250")) {
+                    newState++;
+                    System.out.println("Successfully sent body.");
+                } else {
+                    newState = -1;
+                    System.out.println("Error sending body.");
+                }
+            }
+        } catch (IOException e) {
+            newState = -1;
+            System.out.println("I/O exception while sending body.");
         }
         return newState;
     }
@@ -278,9 +318,11 @@ public class TCPClient {
         StringBuilder mailBodyLines = new StringBuilder();
         try {
             while((bodyLine = sysIn.readLine()) != null) {
-                mailBodyLines.append(bodyLine + "\r\n");
+                mailBodyLines.append(bodyLine);
                 if(bodyLine.equals(".")) {
                     break;
+                } else {
+                    mailBodyLines.append("\r\n");
                 }
             }
         } catch (IOException e) {

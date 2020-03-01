@@ -96,6 +96,7 @@ public class TCPMultiServerThread extends Thread {
 
     ParseResponse parseRequest(int currentState, String clientMessage) {
          ParseResponse response = new ParseResponse();
+         System.out.println("Recieved message: " + clientMessage);
 
     	 if(currentState == 1) { 
     		 String[] words = clientMessage.split(" ", 2);
@@ -141,7 +142,7 @@ public class TCPMultiServerThread extends Thread {
          } else if (currentState == 5){
             response.newState = 1;
             response.response = "250 Message received and to be delivered";
-            System.out.println(clientMessage);
+            System.out.println("Recieved Mail:\r\n" + clientMessage);
          } else {
              response.newState = -1;
          }
