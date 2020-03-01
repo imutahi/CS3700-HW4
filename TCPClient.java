@@ -127,7 +127,7 @@ public class TCPClient {
             return -1;
         }
 
-        newState = sendBody(newState, mail.body, socketOut, socketIn);
+        newState = sendBody(newState, mail.getBody(), socketOut, socketIn);
         if (newState == -1) {
             return -1;
         }
