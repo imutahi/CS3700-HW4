@@ -20,6 +20,7 @@ public class TCPClient {
         BufferedReader sysIn = new BufferedReader(new InputStreamReader(System.in));
         String fromUser;
         String fromServer;
+        Mail mail = new Mail();
 
         while(state != -1) {
             while (state == 0) {
@@ -32,7 +33,7 @@ public class TCPClient {
                 }
             }
             if(state == 1) {
-                Mail mail = getMailFromUser(sysIn);
+                mail = getMailFromUser(sysIn);
 
                 System.out.println("Sender: " + mail.sender);
                 System.out.println("Reciever: " + mail.reciever);
@@ -42,9 +43,7 @@ public class TCPClient {
                 state = 2;
             }
             if(state == 2) {
-                if ((fromServer = socketIn.readLine()) != null) {
-                    System.out.println("Server: " + fromServer);
-                }
+                state = sendMail(state,mail,socketOut,socketIn);
             }
         }
 
@@ -71,6 +70,37 @@ public class TCPClient {
         socketIn.close();
         sysIn.close();
         tcpSocket.close();
+    }
+
+    private static int sendMail(int currentState, Mail mail, PrintWriter socketOut, BufferedReader socketIn) {
+        int newState = currentState;
+
+        newState = sendHello(newState, socketOut, socketIn);
+        if (newState == -1) {
+            return -1;
+        }
+        return newState;
+    }
+
+    private static int sendHello(int currentState, PrintWriter socketOut, BufferedReader socketIn){
+        int newState = currentState;
+        String response;
+        socketOut.println("HELO");
+        try {
+            if((response = socketIn.readLine()) != null) {
+                String[] words = response.split(" ", 5);
+                if(words[0].equals("220")) {
+                    newState++;
+                } else {
+                    newState = -1;
+                    System.out.println("Error sending hello.");
+                }
+            }
+        } catch (IOException e) {
+            newState = -1;
+            System.out.println("I/O exception while sending hello.");
+        }
+        return newState;
     }
 
     private ConnectionResponse connectToServer(BufferedReader sysIn) {
@@ -149,7 +179,7 @@ public class TCPClient {
 
     private static String getBody(BufferedReader sysIn) {
         String bodyLine;
-        System.out.println("Please input the e-mail body. End the message body with /'./' on a line by itself.");
+        System.out.println("Please input the e-mail body. End the message body with \".\" on a line by itself.");
         StringBuilder mailBodyLines = new StringBuilder();
         try {
             while((bodyLine = sysIn.readLine()) != null) {
