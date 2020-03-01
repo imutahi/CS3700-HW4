@@ -42,6 +42,7 @@ public class TCPClient {
             System.out.println("Sender: " + mail.sender);
             System.out.println("Reciever: " + mail.reciever);
             System.out.println("Subject: " + mail.subject);
+            System.out.println("Body: " + mail.body);
 
             state = 2;
         }
@@ -81,6 +82,7 @@ public class TCPClient {
         mail.sender = getSender(sysIn);
         mail.reciever = getReciever(sysIn);
         mail.subject = getSubject(sysIn);
+        mail.body = getBody(sysIn);
         return mail;
     }
 
@@ -88,7 +90,7 @@ public class TCPClient {
         String sender = null;
         System.out.println("Please input sender's email address: ");
         try {
-        sender = sysIn.readLine();
+            sender = sysIn.readLine();
         } catch (IOException e) {
             System.err.println("Couldn't read sender's address.");
         }
@@ -99,7 +101,7 @@ public class TCPClient {
         String reciever = null;
         System.out.println("Please input reciever's email address: ");
         try {
-        reciever = sysIn.readLine();
+            reciever = sysIn.readLine();
         } catch (IOException e) {
             System.err.println("Couldn't read reciever's address.");
         }
@@ -110,10 +112,27 @@ public class TCPClient {
         String subject = null;
         System.out.println("Please input the Subject: ");
         try {
-        subject = sysIn.readLine();
+            subject = sysIn.readLine();
         } catch (IOException e) {
             System.err.println("Couldn't read the Subject.");
         }
         return subject;
     }
+
+    private static String getBody(BufferedReader sysIn) {
+        String bodyLine;
+        System.out.println("Please input the e-mail body. End the message body with /'./' on a line by itself.");
+        StringBuilder mailBodyLines = new StringBuilder();
+        try {
+            while((bodyLine = sysIn.readLine()) != null) {
+                mailBodyLines.append(bodyLine + "\r\n");
+                if(bodyLine.equals(".")) {
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Couldn't read the Subject.");
+        }
+        return mailBodyLines.toString();
+    } 
 }
