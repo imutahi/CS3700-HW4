@@ -45,9 +45,6 @@ public class TCPMultiServerThread extends Thread {
                     }
                     response = parseRequest(this.state, clientMessage);
 
-                    System.out.println("Next State: " + String.valueOf(response.newState));
-                    System.out.println("Response: " + response.response);
-
                     this.state = response.newState;
                     if (response.response != null) {
                         cSocketOut.println(response.response);
@@ -98,7 +95,6 @@ public class TCPMultiServerThread extends Thread {
 
     ParseResponse parseRequest(int currentState, String clientMessage) {
          ParseResponse response = new ParseResponse();
-         System.out.println("Recieved message: " + clientMessage);
 
     	 if(currentState == 1) { 
     		 String[] words = clientMessage.split(" ", 2);
