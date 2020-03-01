@@ -76,10 +76,26 @@ public class TCPClient {
         int newState = currentState;
 
         newState = sendHello(newState, socketOut, socketIn);
+
         if (newState == -1) {
             return -1;
         }
+
         newState = sendMailFrom(newState, mail.sender, socketOut, socketIn);
+        if (newState == -1) {
+            return -1;
+        }
+
+        newState = sendRecipientTo(newState, mail.reciever, socketOut, socketIn);
+        if (newState == -1) {
+            return -1;
+        }
+
+        newState = sendData(newState, socketOut, socketIn);
+        if (newState == -1) {
+            return -1;
+        }
+
         return newState;
     }
 
@@ -117,12 +133,56 @@ public class TCPClient {
                     System.out.println("Successfully sent mail from.");
                 } else {
                     newState = -1;
-                    System.out.println("Error Mail From.");
+                    System.out.println("Error sending Mail From.");
                 }
             }
         } catch (IOException e) {
             newState = -1;
             System.out.println("I/O exception while sending Mail From.");
+        }
+        return newState;
+    }
+
+    private static int sendRecipientTo(int currentState, String address, PrintWriter socketOut, BufferedReader socketIn){
+        int newState = currentState;
+        String response;
+        socketOut.println("RCPT TO: " + address);
+        try {
+            if((response = socketIn.readLine()) != null) {
+                String[] words = response.split(" ", 5);
+                if(words[0].equals("250")) {
+                    newState++;
+                    System.out.println("Successfully sent Recipiant To.");
+                } else {
+                    newState = -1;
+                    System.out.println("Error sending Recipiant To.");
+                }
+            }
+        } catch (IOException e) {
+            newState = -1;
+            System.out.println("I/O exception while sending Recipiant To.");
+        }
+        return newState;
+    }
+
+    private static int sendData(int currentState, PrintWriter socketOut, BufferedReader socketIn){
+        int newState = currentState;
+        String response;
+        socketOut.println("DATA");
+        try {
+            if((response = socketIn.readLine()) != null) {
+                String[] words = response.split(" ", 5);
+                if(words[0].equals("354")) {
+                    newState++;
+                    System.out.println("Successfully sent DATA.");
+                } else {
+                    newState = -1;
+                    System.out.println("Error sending DATA.");
+                }
+            }
+        } catch (IOException e) {
+            newState = -1;
+            System.out.println("I/O exception while sending DATA.");
         }
         return newState;
     }
