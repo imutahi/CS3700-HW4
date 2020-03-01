@@ -38,7 +38,10 @@ public class TCPClient {
 
         while (state == 1) {
             Mail mail = getMailFromUser(sysIn);
-            System.out.println(mail.sender);
+
+            System.out.println("Sender: " + mail.sender);
+            System.out.println("Reciever: " + mail.reciever);
+
             state = 2;
         }
 
@@ -74,8 +77,9 @@ public class TCPClient {
 
     private static Mail getMailFromUser(BufferedReader sysIn) {
         Mail mail = new Mail();
-        String sender = getSender(sysIn);
-        mail.sender = sender;
+        mail.sender = getSender(sysIn);
+        mail.reciever = getReciever(sysIn);
+
         return mail;
     }
 
@@ -89,4 +93,16 @@ public class TCPClient {
         }
         return sender;
     }
+
+    private static String getReciever(BufferedReader sysIn) {
+        String reciever = null;
+        System.out.println("Please input reciever's email address: ");
+        try {
+        reciever = sysIn.readLine();
+        } catch (IOException e) {
+            System.err.println("Couldn't read reciever's address.");
+        }
+        return reciever;
+    }
+
 }
