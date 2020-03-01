@@ -41,6 +41,7 @@ public class TCPClient {
 
             System.out.println("Sender: " + mail.sender);
             System.out.println("Reciever: " + mail.reciever);
+            System.out.println("Subject: " + mail.subject);
 
             state = 2;
         }
@@ -79,7 +80,7 @@ public class TCPClient {
         Mail mail = new Mail();
         mail.sender = getSender(sysIn);
         mail.reciever = getReciever(sysIn);
-
+        mail.subject = getSubject(sysIn);
         return mail;
     }
 
@@ -105,4 +106,14 @@ public class TCPClient {
         return reciever;
     }
 
+    private static String getSubject(BufferedReader sysIn) {
+        String subject = null;
+        System.out.println("Please input the Subject: ");
+        try {
+        subject = sysIn.readLine();
+        } catch (IOException e) {
+            System.err.println("Couldn't read the Subject.");
+        }
+        return subject;
+    }
 }
