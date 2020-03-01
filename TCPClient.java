@@ -54,10 +54,29 @@ public class TCPClient {
             socketOut.flush();
         }
 
-        socketOut.close();
-        socketIn.close();
-        sysIn.close();
-        tcpSocket.close();
+            closeConnection(sysIn, socketIn, socketOut, tcpSocket); 
+
+    }
+
+    private static void closeConnection(BufferedReader sysIn, BufferedReader socketIn, PrintWriter socketOut, Socket tcpSocket) {
+        try {
+
+            String fromServer;
+            socketOut.println("QUIT");
+            fromServer = socketIn.readLine();
+            System.out.println(fromServer);
+
+            socketOut.close();
+            socketIn.close();
+            sysIn.close();
+            if (tcpSocket != null) {
+                tcpSocket.close();
+            }
+
+
+        } catch (IOException e) {
+            System.out.println("I/O exception while closing connection");
+        }
     }
 
     private static int shouldContinue(BufferedReader sysIn) {

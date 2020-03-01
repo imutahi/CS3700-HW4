@@ -87,7 +87,9 @@ public class TCPMultiServerThread extends Thread {
 			
             cSocketOut.close();
             cSocketIn.close();
-            clientTCPSocket.close();
+            if (clientTCPSocket != null) {
+                clientTCPSocket.close();
+            }
 
 		} catch (IOException e) {
 		    e.printStackTrace();
