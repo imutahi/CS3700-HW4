@@ -79,6 +79,7 @@ public class TCPClient {
         if (newState == -1) {
             return -1;
         }
+        newState = sendMailFrom(newState, mail.sender, socketOut, socketIn);
         return newState;
     }
 
@@ -89,8 +90,9 @@ public class TCPClient {
         try {
             if((response = socketIn.readLine()) != null) {
                 String[] words = response.split(" ", 5);
-                if(words[0].equals("220")) {
+                if(words[0].equals("250")) {
                     newState++;
+                    System.out.println("Successfully sent hello.");
                 } else {
                     newState = -1;
                     System.out.println("Error sending hello.");
@@ -103,9 +105,32 @@ public class TCPClient {
         return newState;
     }
 
+    private static int sendMailFrom(int currentState, String address, PrintWriter socketOut, BufferedReader socketIn){
+        int newState = currentState;
+        String response;
+        socketOut.println("MAIL FROM: " + address);
+        try {
+            if((response = socketIn.readLine()) != null) {
+                String[] words = response.split(" ", 5);
+                if(words[0].equals("250")) {
+                    newState++;
+                    System.out.println("Successfully sent mail from.");
+                } else {
+                    newState = -1;
+                    System.out.println("Error Mail From.");
+                }
+            }
+        } catch (IOException e) {
+            newState = -1;
+            System.out.println("I/O exception while sending Mail From.");
+        }
+        return newState;
+    }
+
     private ConnectionResponse connectToServer(BufferedReader sysIn) {
 
         String fromUser = new String();
+        String fromServer = new String();
         ConnectionResponse response = new ConnectionResponse();
         response.setState(0);
 
@@ -120,8 +145,18 @@ public class TCPClient {
                 response.setSocket(socket);
                 response.setSocketOut(socketOut);
                 response.setSocketIn(socketIn);
-                response.setState(1);
-
+                if ((fromServer = socketIn.readLine()) != null) {
+                    String[] words = fromServer.split(" ",2);
+                    if (words[0].equals("220")) {
+                        response.setState(1);
+                    } else {
+                        response.setState(-1);
+                        System.out.println("Error, did not recieve initial message from server.");
+                    } 
+                } else {
+                    response.setState(-1);
+                    System.out.println("Error, did not recieve initial message from server.");
+                }
             }
         } catch (UnknownHostException e) {
 
